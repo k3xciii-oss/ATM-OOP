@@ -9,6 +9,7 @@ class Rekening:
         self.nama = nama
         self.pin = pin
         self.saldo = saldo
+        self.riwayat = []
         self.isLogin = False
     def login(self,pin_input):
         if pin_input == self.pin:
@@ -27,6 +28,7 @@ class Rekening:
         if self.isLogin:
             self.saldo += uang
             print(f'Berhasil setor uang sebanyak Rp {uang}')
+            self.riwayat.append(f'Setor {uang}')
         else:
             print('login terlebih dahulu')
             
@@ -37,9 +39,21 @@ class Rekening:
             else:
                 self.saldo -= uang
                 print(f'Berhasil tarik uang dair saldo sebesar Rp {uang}')
+                self.riwayat.append(f'Tarik: {uang}')
         else:
             print('Silahkan login terlebih dahulu')
-            
+    
+    def cek_riwayat(self):
+        if self.isLogin:
+            if self.riwayat:
+                print('Riwayat transaksi:')
+                for j in self.riwayat:
+                    print('-',j)
+            else:
+                print('Belum ada transaksi')
+        else:
+            print('Anda Belum login')    
+        
     def logOut(self):
         self.isLogin = False 
         print('Berhasil log out')
@@ -47,15 +61,15 @@ class Rekening:
 # PROGRAM UTAMA
 
 nama = input('Buat Nama Rekening: ')
-pin = int(input('Buat PIN: '))
+pin_baru = input('Buat PIN: ')
 saldo = int(input('Masukkan saldo: '))
-rekening1 = Rekening(nama,pin,saldo)
+rekening1 = Rekening(nama,pin_baru,saldo)
 clear()
 
 # LOGIN
 for i in range(3):
-    pin = int(input('Login dengan PIN: '))
-    rekening1.login(pin)
+    pin_input = input('Login dengan PIN: ')
+    rekening1.login(pin_input)
     if rekening1.isLogin:
         break
 else:
@@ -70,7 +84,8 @@ while rekening1.isLogin:
     print('1. cek saldo')
     print('2. Setor uang')
     print('3.Tarik uang')
-    print('4. Log out')
+    print('4. riwayat')
+    print('5. Log out')
     
     pilihan = input('Pilih Menu (1,2,3,4): ')
     
@@ -79,16 +94,30 @@ while rekening1.isLogin:
         input('Tekan Enter kalau mau kembali ke menu')
     
     elif pilihan =='2':
-        jumlah = int(input('Masukkan jumlah yang ingin di setor: '))
-        rekening1.setor(jumlah)
-        input('Tekan Enter kalau mau kembali ke menu')
+        try:
+            jumlah = int(input('Masukkan jumlah yang ingin di setor: '))
+            rekening1.setor(jumlah)
+        except:
+            print('Input harus angka')
+            continue
+        
+        input('Tekan Enter kalau mau kembali ke menu...')
         
     elif pilihan == '3':
-        jumlah = int(input('Masukkan jumlah yang mau di tarik: '))
-        rekening1.tarik(jumlah) 
-        input('Tekan Enter kalau mau kembali ke menu')
+        try:
+            jumlah = int(input('Masukkan jumlah yang mau di tarik: '))
+            rekening1.tarik(jumlah) 
+        except:
+            print('Input harus angka')
+            continue
+        
+        input('Tekan Enter kalau mau kembali ke menu...')
     
     elif pilihan == '4':
+        rekening1.cek_riwayat()
+        input('tekan enter untuk kembali ke menu...')
+
+    elif pilihan == '5':
         rekening1.logOut()
  
         
