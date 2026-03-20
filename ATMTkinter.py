@@ -227,14 +227,7 @@ class ATMApp:
             command=self.proses_setor)
         btn.pack(pady=5)
         
-        btn_back = tk.Button(
-            self.root,
-            text='Kembali',
-            bg='#4CAF50',
-            fg='white',
-            relief='flat',
-            command=self.kembali_ke_menu)
-        btn_back.pack(pady=5)
+       
         
     def proses_tarik(self):
         try:
@@ -277,14 +270,6 @@ class ATMApp:
             command=self.proses_tarik)
         btn.pack(pady=5)
         
-        btn_back = tk.Button(
-            self.root,
-            text='Kembali',
-            bg='#4CAF50',
-            fg='white',
-            relief='flat',
-            command=self.kembali_ke_menu)
-        btn_back.pack(pady=5)
         
     def logout(self):
         self.rekening.logout()
