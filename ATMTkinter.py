@@ -6,52 +6,172 @@ class ATMApp:
     def __init__(self,rekening):
         self.root = tk.Tk()
         self.root.geometry('500x500')
+        self.root.configure(bg="#1e1e2f")
         self.rekening = rekening
         self.halaman_login()
     
 
-    def halaman_login(self):
-        label = tk.Label(self.root, text='Login')
-        label.pack()
+    def buat_akun(self):
+        self.root.configure(bg="#1e1e2f")
+
+        frame = tk.Frame(self.root, bg="#2c2c3e", padx=20, pady=20)
+        frame.pack(pady=50)
+
+        # Judul
+        tk.Label(
+            frame,
+            text='Buat Akun',
+            font=('Arial', 16, 'bold'),
+            bg='#2c2c3e',
+            fg='white'
+        ).pack(pady=10)
+
+        # Nama
+        tk.Label(frame, text='Masukkan Nama:', bg='#2c2c3e', fg='white').pack()
+        self.entry_nama = tk.Entry(frame)
+        self.entry_nama.pack(pady=5)
+
+        # PIN
+        tk.Label(frame, text='Masukkan PIN:', bg='#2c2c3e', fg='white').pack()
+        self.entry_pin = tk.Entry(frame, show='*')
+        self.entry_pin.pack(pady=5)
+
+        # Saldo
+        tk.Label(frame, text='Saldo Awal:', bg='#2c2c3e', fg='white').pack()
+        self.entry_saldo = tk.Entry(frame)
+        self.entry_saldo.pack(pady=5)
+
+        # Button
+        tk.Button(
+            frame,
+            text='Buat Akun',
+            font=('Arial', 10, 'bold'),
+            bg='#4CAF50',
+            fg='white',
+            relief='flat',
+            command=self.proses_buat
+        ).pack(pady=15)
+    
+    def proses_buat(self):
+        nama = self.entry_nama.get()
+        pin = self.entry_pin.get()
+        saldo = self.entry_saldo.get()
         
-        self.entry = tk.Entry(self.root)
+        if nama == '' or pin =='' or saldo == '':
+            messagebox.showerror('Error', 'Semua data harus diisi')
+            return
+        if not pin.isdigit():
+            messagebox.showerror('Error', 'PIN harus angka')
+            return
+        if not saldo.isdigit():
+            messagebox.showerror('Error', 'Saldo harus angka')
+            return
+            
+        self.rekening = Rekening(nama, pin, int(saldo))
+        messagebox.showinfo('Sukses', 'Akun berhasil di buat')
+        self.halaman_login()
+        
+    
+    def halaman_login(self):
+        self.clear_window()
+        frame = tk.Frame(self.root, bg='#2c2c3e', padx=20, pady=20)
+        frame.pack(pady=50)
+        
+        label = tk.Label(
+            frame,
+            text='Login',
+            font=('Arial', 16, 'bold'),
+            bg="#2c2cbd", 
+            fg='white'
+            ).pack(pady=10)
+        
+        self.entry = tk.Entry(frame)
         self.entry.pack()
         self.entry.focus()
         
-        btn = tk.Button(self.root, text='Login', command=self.proses_login)
-        btn.pack()
+        btn_login = tk.Button(
+            frame,
+            text='Login',
+            bg='#4CAF50',
+            fg='white',
+            relief='flat',
+            command=self.proses_login
+            ).pack(pady=10)
+        btn_buat = tk.Button(
+            frame,
+            text='Buat Akun',
+            bg='#2196F3',
+            fg='white',
+            relief='flat',
+            command=lambda: [self.clear_window(),self.buat_akun()]
+        ).pack(pady=5)
+        
 
     def proses_login(self):
+        if self.rekening is None:
+            messagebox.showerror('Error', 'Belum ada akun yang di buat')
+            return
         pin = self.entry.get()
         status, pesan = self.rekening.login(pin)
         if status:
             messagebox.showinfo('STATUS', pesan)
             self.clear_window()
             self.halaman_menu()
-    
+        else:
+            messagebox.showerror('Error', pesan)
     def clear_window(self):
         for widget in self.root.winfo_children():
             widget.destroy()
             
     def halaman_menu(self):
         # Label 
-        label = tk.Label(self.root, text=f'Selamat datang {self.rekening.nama}')
-        label.pack(pady=5)
+        label = tk.Label(
+            self.root,
+            text=f'Selamat datang {self.rekening.nama}',
+            font=('Arial', 16, 'bold'),
+            bg="#2323b8",
+            fg='white')
+        
+        label.pack(pady=50)
         
         # Tombol untuk lihat saldo
-        btn_saldo = tk.Button(self.root, text='Cek Saldo', command=self.cek_saldo)
+        btn_saldo = tk.Button(
+            self.root,
+            text='Cek Saldo',
+            bg='#4CAF50',
+            fg='white',
+            relief='flat',
+            command=self.cek_saldo)
         btn_saldo.pack(pady=5)
         
         # Tombol untuk setor uang
-        btn_setor = tk.Button(self.root, text='Setor Uang', command=self.halaman_setor)
+        btn_setor = tk.Button(
+            self.root,
+            text='Setor Uang',
+            bg='#4CAF50',
+            fg='white',
+            relief='flat',
+            command=self.halaman_setor)
         btn_setor.pack(pady=5)
         
         # Tombol untuk tarik uang
-        btn_tarik = tk.Button(self.root, text='Tarik Uang', command=self.halaman_tarik)
+        btn_tarik = tk.Button(
+            self.root,
+            text='Tarik Uang',
+            bg='#4CAF50',
+            fg='white',
+            relief='flat',
+            command=self.halaman_tarik)
         btn_tarik.pack(pady=5)
         
         # Tombol untuk Log out
-        btn_logout = tk.Button(self.root, text='Log Out', command=self.logout)
+        btn_logout = tk.Button(
+            self.root,
+            text='Log Out',
+            bg='#4CAF50',
+            fg='white',
+            relief='flat',
+            command=self.logout)
         btn_logout.pack(pady=5)
     
     # fungsi untuk kembali ke menu       
@@ -85,19 +205,36 @@ class ATMApp:
         self.clear_window()
         
         # Label
-        label = tk.Label(self.root, text='Masukkan jumlah uang yang mau di setor')
-        label.pack(pady=5)
+        label = tk.Label(
+            self.root,
+            text='Masukkan jumlah uang yang mau di setor',
+            font=('Arial', 16, 'bold'),
+            bg="#2a2adb",
+            fg='white')
+        label.pack(pady=50)
         
         # Input jumlah setor
         self.entry_setor = tk.Entry(self.root)
-        self.entry_setor.pack()
+        self.entry_setor.pack(pady=50)
         
         # Tombol setor dan kembali
-        btn = tk.Button(self.root, text='Setor', command=self.proses_setor)
-        btn.pack()
+        btn = tk.Button(
+            self.root,
+            text='Setor',
+            bg='#4CAF50',
+            fg='white',
+            relief='flat',
+            command=self.proses_setor)
+        btn.pack(pady=5)
         
-        btn_back = tk.Button(self.root, text='Kembali', command=self.kembali_ke_menu)
-        btn_back.pack()
+        btn_back = tk.Button(
+            self.root,
+            text='Kembali',
+            bg='#4CAF50',
+            fg='white',
+            relief='flat',
+            command=self.kembali_ke_menu)
+        btn_back.pack(pady=5)
         
     def proses_tarik(self):
         try:
@@ -117,19 +254,37 @@ class ATMApp:
         self.clear_window()
         
         # label
-        label = tk.Label(self.root, text='Masukkan jumlah tarik')
-        label.pack()
+        label = tk.Label(
+            self.root,
+            text='Masukkan jumlah tarik',
+            font=('Arial', 16, 'bold'),
+            bg='#2a2adb',
+            fg='white'
+            )
+        label.pack(pady=50)
         
         # Input jumlah tarik
         self.entry_tarik = tk.Entry(self.root)
-        self.entry_tarik.pack()
+        self.entry_tarik.pack(pady=50)
         
         # Tombol
-        btn = tk.Button(self.root, text='Tarik Tunai', command=self.proses_tarik)
-        btn.pack()
+        btn = tk.Button(
+            self.root,
+            text='Tarik Tunai',
+            bg='#4CAF50',
+            fg='white',
+            relief='flat',
+            command=self.proses_tarik)
+        btn.pack(pady=5)
         
-        btn_back = tk.Button(self.root, text='Kembali', command=self.kembali_ke_menu)
-        btn_back.pack()
+        btn_back = tk.Button(
+            self.root,
+            text='Kembali',
+            bg='#4CAF50',
+            fg='white',
+            relief='flat',
+            command=self.kembali_ke_menu)
+        btn_back.pack(pady=5)
         
     def logout(self):
         self.rekening.logout()
@@ -190,7 +345,7 @@ class Rekening:
     
     
 
-rekening = Rekening("Keci", "1234", 100000)
+rekening = None
 
 app = ATMApp(rekening)
 app.root.mainloop()
