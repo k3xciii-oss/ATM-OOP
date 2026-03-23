@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
+import json
+
 
 class ATMApp:
     
@@ -7,9 +9,24 @@ class ATMApp:
         self.root = tk.Tk()
         self.root.geometry('500x500')
         self.root.configure(bg="#1e1e2f")
+        
+        self.data_akun = {}
+        self.load_data()
+        
         self.rekening = rekening
         self.halaman_login()
+        
     
+    def load_data(self):
+        try:
+            with open('data_akun.json', 'r') as file:
+                self.data_akun = json.load(file)
+        except FileNotFoundError:
+            self.data_akun = {}
+            
+    def save_data(self):
+        with open('data_akun.json', 'w') as file:
+            json.dump(self.data_akun, file, indent=4)
 
     def buat_akun(self):
         self.root.configure(bg="#1e1e2f")
@@ -30,11 +47,13 @@ class ATMApp:
         tk.Label(frame, text='Masukkan Nama:', bg='#2c2c3e', fg='white').pack()
         self.entry_nama = tk.Entry(frame)
         self.entry_nama.pack(pady=5)
+        self.entry_nama.focus()
 
         # PIN
         tk.Label(frame, text='Masukkan PIN:', bg='#2c2c3e', fg='white').pack()
         self.entry_pin = tk.Entry(frame, show='*')
         self.entry_pin.pack(pady=5)
+        
 
         # Saldo
         tk.Label(frame, text='Saldo Awal:', bg='#2c2c3e', fg='white').pack()
@@ -67,7 +86,11 @@ class ATMApp:
             messagebox.showerror('Error', 'Saldo harus angka')
             return
             
-        self.rekening = Rekening(nama, pin, int(saldo))
+        self.data_akun[nama] = {
+            'pin': pin,
+            'saldo': int(saldo)
+        }
+        self.save_data()
         messagebox.showinfo('Sukses', 'Akun berhasil di buat')
         self.halaman_login()
         
@@ -77,9 +100,21 @@ class ATMApp:
         frame = tk.Frame(self.root, bg='#2c2c3e', padx=20, pady=20)
         frame.pack(pady=50)
         
+        label_nama_login = tk.Label(
+            frame,
+            text='Nama',
+            font=('Arial', 16, 'bold'),
+            bg="#2c2cbd", 
+            fg='white'
+        ).pack(pady=10)
+        
+        self.entry_nama_login = tk.Entry(frame)
+        self.entry_nama_login.pack()
+        self.entry_nama_login.focus()
+        
         label = tk.Label(
             frame,
-            text='Login',
+            text='Pin',
             font=('Arial', 16, 'bold'),
             bg="#2c2cbd", 
             fg='white'
@@ -87,7 +122,6 @@ class ATMApp:
         
         self.entry = tk.Entry(frame)
         self.entry.pack()
-        self.entry.focus()
         
         btn_login = tk.Button(
             frame,
@@ -108,17 +142,30 @@ class ATMApp:
         
 
     def proses_login(self):
-        if self.rekening is None:
-            messagebox.showerror('Error', 'Belum ada akun yang di buat')
+        nama = self.entry_nama_login.get()
+        pin = self.entry.get()
+        
+        if nama == '' or pin == '':
+            messagebox.showerror('Error', 'Nama dan pin harus diisi')
             return
         pin = self.entry.get()
-        status, pesan = self.rekening.login(pin)
-        if status:
-            messagebox.showinfo('STATUS', pesan)
+        
+        
+        if nama not in self.data_akun:
+            messagebox.showerror('Error', 'Akun tidak ditemukan')
+            return
+        
+        data = self.data_akun[nama]
+        
+        if pin == data['pin']:
+            self.rekening = Rekening(nama, pin, int(data['saldo']))
+            self.rekening.isLogin = True
             self.clear_window()
             self.halaman_menu()
+            
         else:
-            messagebox.showerror('Error', pesan)
+            messagebox.showerror('Error', 'Pin salah')
+        
     def clear_window(self):
         for widget in self.root.winfo_children():
             widget.destroy()
@@ -186,7 +233,7 @@ class ATMApp:
         if saldo is None:
             messagebox.showerror('Error', 'Silahkan login terlebih dahulu')
         else:
-            messagebox.showinfo('Saldo', f'Saldo anda: Rp {saldo:,}')
+            messagebox.showinfo('Saldo', f'Saldo anda: Rp {int(saldo):,}')
     
     def proses_setor(self):
         try:
@@ -194,6 +241,9 @@ class ATMApp:
             status, pesan = self.rekening.setor(uang)
             
             if status:
+                self.data_akun[self.rekening.nama]['saldo'] = self.rekening.saldo
+                self.save_data()
+                
                 messagebox.showinfo('Sukses', pesan)
                 self.kembali_ke_menu()
             else:
@@ -235,6 +285,8 @@ class ATMApp:
             status, pesan = self.rekening.tarik(uang)
             
             if status:
+                self.data_akun[self.rekening.nama]['saldo'] = self.rekening.saldo
+                self.save_data()
                 messagebox.showinfo('Sukses', pesan)
                 self.kembali_ke_menu()
             else:
